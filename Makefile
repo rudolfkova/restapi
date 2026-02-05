@@ -13,4 +13,9 @@ start:
 test:
 	go test -v -race -timeout 30s ./...
 
+.PHONY: db
+
+db:
+	psql -U postgres -d restapi_dev
+
 .DEFAULT_GOAL := build
