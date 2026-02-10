@@ -13,6 +13,9 @@ start:
 test:
 	go test -v -race -timeout 30s ./...
 
+clear-test:
+	go clean -testcache
+
 .PHONY: db
 
 db:
