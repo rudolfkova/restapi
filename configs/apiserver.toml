@@ -1,3 +1,4 @@
 bind_addr = ":8080"
 log_level = "DEBUG"
 database_url = "host=localhost dbname=restapi_dev user=postgres password=rudolfkova sslmode=disable"
+session_key = "123456789"

@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"net/http"
 	"userService/internal/app/store/sqlstore"
+
+	"github.com/alexedwards/scs/v2"
 )
 
 func Start(config *Config) error {
@@ -14,7 +16,10 @@ func Start(config *Config) error {
 
 	defer db.Close()
 	store := sqlstore.New(db)
-	s := newServer(store)
+
+	sessionManager := scs.New()
+
+	s := newServer(store, sessionManager)
 	return http.ListenAndServe(config.BindAddr, s)
 }
 
