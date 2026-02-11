@@ -13,6 +13,51 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestSErver_AuthenticateUser(t *testing.T) {
+	store := teststore.New()
+	u := model.TestUser(t)
+	store.User().Create(u)
+	s := newServer(store, scs.New())
+
+	testCases := []struct {
+		name         string
+		setupCookie  bool
+		expectedCode int
+	}{
+		{
+			name:         "authenticated",
+			setupCookie:  true,
+			expectedCode: http.StatusOK,
+		},
+		{
+			name:         "not authenticated",
+			setupCookie:  false,
+			expectedCode: http.StatusUnauthorized,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			rec := httptest.NewRecorder()
+			req, _ := http.NewRequest(http.MethodGet, "/me", nil)
+
+			if tc.setupCookie {
+				loginRec := httptest.NewRecorder()
+				loginBody := bytes.NewBufferString(`{"email":"` + u.Email + `","password":"password"}`)
+				loginReq, _ := http.NewRequest(http.MethodPost, "/session", loginBody)
+				loginReq.Header.Set("Content-Type", "application/json")
+				s.ServeHTTP(loginRec, loginReq)
+				for _, c := range loginRec.Result().Cookies() {
+					req.AddCookie(c)
+				}
+			}
+
+			s.ServeHTTP(rec, req)
+			assert.Equal(t, tc.expectedCode, rec.Code)
+		})
+	}
+}
+
 func TestServer_HandleUsersCreate(t *testing.T) {
 	s := newServer(teststore.New(), scs.New())
 	testCases := []struct {
